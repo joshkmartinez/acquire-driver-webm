@@ -261,7 +261,7 @@ encode_frame(vpx_codec_ctx_t* codec,
     const vpx_codec_cx_pkt_t* pkt = NULL;
 
     const vpx_codec_err_t res =
-      vpx_codec_encode(codec, img, frame_index, 1, flags, VPX_DL_GOOD_QUALITY);
+      vpx_codec_encode(codec, img, frame_index, 1, flags, VPX_DL_REALTIME);
     if (res != VPX_CODEC_OK) {
         LOGE("Error during encoding: ", vpx_codec_error(codec));
         const char* detail = vpx_codec_error_detail(codec);
