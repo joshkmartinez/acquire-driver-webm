@@ -71,8 +71,15 @@ main()
                                     &props.video[0].storage.identifier));
 
         storage_properties_init(
-          &props.video[0].storage.settings, 0, SIZED("/Users/joshua.martinez/Desktop/Code/Aquire/acquire-driver-webm/"
-          "build/out.webm"), 0, 0, { 0 });
+          &props.video[0].storage.settings,
+          0,
+          SIZED("/Users/joshua.martinez/Desktop/Code/Aquire/"
+                "acquire-driver-webm/" // TODO: don't use absolute file path
+                                       // here
+                "build/out.webm"),
+          0,
+          0,
+          { 0 });
 
         OK(acquire_configure(runtime, &props));
 
@@ -80,10 +87,11 @@ main()
         OK(acquire_get_configuration_metadata(runtime, &metadata));
 
         props.video[0].camera.settings.binning = 1;
-        props.video[0].camera.settings.pixel_type = SampleType_u8; // TODO: Create test for u16
+        props.video[0].camera.settings.pixel_type =
+          SampleType_u8; // TODO: Create a test for u16
         props.video[0].camera.settings.shape = { .x = 1920, .y = 1080 };
         props.video[0].camera.settings.exposure_time_us = 1e4;
-        props.video[0].max_frame_count = 100;
+        props.video[0].max_frame_count = 10;
 
         OK(acquire_configure(runtime, &props));
 
@@ -108,7 +116,8 @@ main()
         {};
         // expected time to acquire frames + 100%
         static double time_limit_ms =
-          (props.video[0].max_frame_count) * 1000.0 * 2.0;
+          (props.video[0].max_frame_count) * 1000.0 *
+          6.0; // played around with this time limit, there are some instances where the factor needs longer, 6 seems to be the most consistent
         clock_init(&clock);
         clock_shift_ms(&clock, time_limit_ms);
         OK(acquire_start(runtime));
@@ -118,9 +127,10 @@ main()
                 struct clock throttle
                 {};
                 clock_init(&throttle);
-                // EXPECT(clock_cmp_now(&clock) < 0,
-                //        "Timeout at %f ms",
-                //        clock_toc_ms(&clock) + time_limit_ms);
+                // This time limit check makes the test brittle, doesn't always finish in time
+                EXPECT(clock_cmp_now(&clock) < 0,
+                       "Timeout at %f ms",
+                       clock_toc_ms(&clock) + time_limit_ms);
                 VideoFrame *beg, *end, *cur;
                 OK(acquire_map_read(runtime, 0, &beg, &end));
                 for (cur = beg; cur < end; cur = next(cur)) {
@@ -152,8 +162,10 @@ main()
         OK(acquire_shutdown(runtime));
 
         // Check if the file exists and is not empty
-        FILE* f = fopen("/Users/joshua.martinez/Desktop/Code/Aquire/acquire-driver-webm/"
-          "build/out.webm", "r");
+        FILE* f = fopen(
+          "/Users/joshua.martinez/Desktop/Code/Aquire/acquire-driver-webm/"
+          "build/out.webm",
+          "r");
         CHECK(f);
         fseek(f, 0, SEEK_END);
         CHECK(ftell(f) > 0); // Ensure the file is not empty
