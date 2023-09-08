@@ -6,4 +6,4 @@
 	url = ../acquire-video-runtime.git
 [submodule "tests/integration/acquire-driver-common"]
 	path = tests/integration/acquire-driver-common
-	url = https://github.com/acquire-project/acquire-driver-common.git
+	url = ../acquire-driver-common.git
