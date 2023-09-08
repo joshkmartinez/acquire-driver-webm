@@ -268,8 +268,7 @@ encode_frame(vpx_codec_ctx_t* codec,
         if (detail) {
             LOGE("vpx_codec_error_detail: ", detail);
         }
-
-        exit(1); // TODO: Check, should this be goto Error? not very graceful
+        goto Error;
     }
 
     while ((pkt = vpx_codec_get_cx_data(codec, &iter)) != NULL) {
@@ -291,7 +290,7 @@ encode_frame(vpx_codec_ctx_t* codec,
             // std::cout << "Add frame result: " << addFrame << std::endl;
             if (!addFrame) {
                 LOGE("Failed to add frame to webm");
-                exit(1);
+                goto Error;
             }
         }
     }
