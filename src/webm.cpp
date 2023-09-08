@@ -296,6 +296,9 @@ encode_frame(vpx_codec_ctx_t* codec,
     }
 
     return got_pkts;
+
+Error:
+    throw(std::runtime_error("Failed to encode frame"));
 }
 
 static enum DeviceState
