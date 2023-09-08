@@ -1,0 +1,2 @@
+add_subdirectory(devkit)
+add_subdirectory(integration)

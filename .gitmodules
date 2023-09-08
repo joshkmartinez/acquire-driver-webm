@@ -1,0 +1,9 @@
+[submodule "src/acquire-core-libs"]
+	path = src/acquire-core-libs
+	url = ../acquire-core-libs.git
+[submodule "tests/integration/acquire-video-runtime"]
+	path = tests/integration/acquire-video-runtime
+	url = ../acquire-video-runtime.git
+[submodule "tests/integration/acquire-driver-common"]
+	path = tests/integration/acquire-driver-common
+	url = https://github.com/acquire-project/acquire-driver-common.git
