@@ -53,8 +53,7 @@ webm_set(struct Storage* self_, const struct StorageProperties* properties)
     {
         self->cfg.g_timebase.num = 1;
         self->cfg.g_timebase.den =
-          30; // 30 fps // TODO: Check, just assuming 30fps? Or is this some
-              // other configuration prop?
+          30; // 30 fps // TODO: Check, just assuming 30fps? Or some other configuration prop?
         vpx_codec_enc_config_default(vpx_codec_vp9_cx(), &(self->cfg), 0);
     }
 
@@ -148,7 +147,8 @@ Error:
     throw(std::runtime_error("Failed to convert to vpx image u8"));
 }
 
-static void memset16(void* ptr, uint16_t val, size_t n)
+static void
+memset16(void* ptr, uint16_t val, size_t n)
 {
     uint16_t* p = (uint16_t*)ptr;
     for (size_t i = 0; i < n; ++i) {
@@ -156,6 +156,9 @@ static void memset16(void* ptr, uint16_t val, size_t n)
     }
 }
 
+// TODO: FIX, known issue
+// Not producing correct images
+// Y & U & V channels are funny
 vpx_image_t*
 convert_to_vpx_image_u16(const struct VideoFrame* frame)
 {
@@ -173,18 +176,16 @@ convert_to_vpx_image_u16(const struct VideoFrame* frame)
     for (int y = 0; y < height; ++y) {
         memcpy(img->planes[VPX_PLANE_Y] + y * img->stride[VPX_PLANE_Y],
                frame->data + y * frame->shape.strides.height * 2,
-               width * 2); 
+               width * 2);
     }
 
     for (int y = 0; y < height / 2; ++y) {
         memset16(img->planes[VPX_PLANE_U] + y * img->stride[VPX_PLANE_U],
-               1 << 15, // Midpoint of 16 bits
-               width);
-        memset16(
-          img->planes[VPX_PLANE_V] +
-            y * img->stride[VPX_PLANE_V], 
-           1<< 15, // Midpoint of 16 bits
-          width);
+                 1 << 15, // Midpoint of 16 bits
+                 width);
+        memset16(img->planes[VPX_PLANE_V] + y * img->stride[VPX_PLANE_V],
+                 1 << 15, // Midpoint of 16 bits
+                 width);
     }
 
     return img;
@@ -230,7 +231,7 @@ convert_to_vpx_images(struct Storage* self_, const struct VideoFrame* frames)
             case SampleType_u12:
             case SampleType_u14:
             case SampleType_u16: {
-                img = convert_to_vpx_image_u16(cur);
+                img = convert_to_vpx_image_u16(cur); // TODO: Known issue, see function signature
                 break;
             }
             default:
@@ -280,7 +281,6 @@ encode_frame(vpx_codec_ctx_t* codec,
             const int keyframe =
               (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
             // std::cout << "Frame PTS: " << pkt->data.frame.pts << std::endl;
-            // TODO: reference the 30 as a frame rate variable
             int addFrame =
               segment.AddFrame(static_cast<const uint8_t*>(pkt->data.frame.buf),
                                pkt->data.frame.sz,
@@ -326,13 +326,11 @@ webm_stop(struct Storage* self_) noexcept
             }
         }
 
-        // if (self->segment !=NULL) { // If the segment is uninitialized, no
-        // need to finalize
+
         if (!self->segment.Finalize()) {
             LOGE("Error finalizing segment.");
             goto Error;
         }
-        // }
 
         self->mkvWriter.Close();
         LOG("Webm: written");
@@ -495,4 +493,3 @@ close_webm_storage(struct Storage* self_)
 Error:
     return Device_Err;
 }
-
